@@ -41,3 +41,37 @@ export interface ApiErrorResponse {
     details?: Record<string, unknown>;
   };
 }
+
+// Phase III: Chat Types
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: Date;
+}
+
+export interface ChatRequest {
+  message: string;
+  conversation_id?: string | null;
+  confirm_action?: {
+    action: string;
+    params: Record<string, any>;
+  } | null;
+}
+
+export interface ChatResponse {
+  message: string;
+  conversation_id: string;
+  requires_confirmation: boolean;
+  confirmation_details?: {
+    action: string;
+    params: Record<string, any>;
+  } | null;
+}
+
+export interface ConfirmationDetails {
+  action: string;
+  params: Record<string, any>;
+  prompt: string;
+}

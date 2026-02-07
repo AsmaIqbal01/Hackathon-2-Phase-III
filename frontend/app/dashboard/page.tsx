@@ -82,13 +82,22 @@ export default function DashboardPage() {
                   <h1 className="font-heading text-2xl font-bold text-neon-blue uppercase tracking-wider text-glow-blue">
                     My Tasks
                   </h1>
-                  <NeonButton
-                    variant="danger"
-                    size="sm"
-                    onClick={() => setShowLogoutModal(true)}
-                  >
-                    Logout
-                  </NeonButton>
+                  <div className="flex gap-3">
+                    <NeonButton
+                      variant="primary"
+                      size="sm"
+                      onClick={() => router.push('/chat')}
+                    >
+                      AI Chat
+                    </NeonButton>
+                    <NeonButton
+                      variant="danger"
+                      size="sm"
+                      onClick={() => setShowLogoutModal(true)}
+                    >
+                      Logout
+                    </NeonButton>
+                  </div>
                 </div>
 
                 {/* Task Form */}
