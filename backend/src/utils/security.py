@@ -10,7 +10,13 @@ from src.config import settings
 
 
 # Password hashing context using bcrypt
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Using rounds=4 for faster hashing in development (default is 12)
+# For production, use rounds=12 or higher
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__rounds=4  # Fast for development, use 12+ for production
+)
 
 
 def hash_password(password: str) -> str:
