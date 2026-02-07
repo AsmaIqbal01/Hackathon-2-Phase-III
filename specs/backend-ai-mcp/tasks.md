@@ -92,20 +92,20 @@ description: "Task list for backend AI + MCP integration implementation"
 
 ### Sub-Agents
 
-- [ ] T027 Create backend/src/agents/__init__.py (empty file to make module)
-- [ ] T028 Create ConfirmationSubAgent in backend/src/agents/confirmation_agent.py with REQUIRES_CONFIRMATION constant, check_required(), request_confirmation(), and execute_confirmed() methods
-- [ ] T029 Create TaskSubAgent in backend/src/agents/task_agent.py with __init__(self, master_agent) and async handle(intent, params) method with intent-to-tool mapping
-- [ ] T030 Create ConversationSubAgent in backend/src/agents/conversation_agent.py with __init__(self, master_agent) and async handle(query) method for history queries
+- [X] T027 Create backend/src/agents/__init__.py (empty file to make module)
+- [X] T028 Create ConfirmationSubAgent in backend/src/agents/confirmation_agent.py with REQUIRES_CONFIRMATION constant, check_required(), request_confirmation(), and execute_confirmed() methods
+- [X] T029 Create TaskSubAgent in backend/src/agents/task_agent.py with __init__(self, master_agent) and async handle(intent, params) method with intent-to-tool mapping
+- [X] T030 Create ConversationSubAgent in backend/src/agents/conversation_agent.py with __init__(self, master_agent) and async handle(query) method for history queries
 
 ### Master Agent
 
-- [ ] T031 Create MasterAgent class in backend/src/agents/master_agent.py with __init__(self, user_id, conversation_id=None) and instantiate all sub-agents
-- [ ] T032 Implement connect_mcp() method in backend/src/agents/master_agent.py: create StdioServerParameters, connect via stdio_client, list tools
-- [ ] T033 Implement _load_history() method in backend/src/agents/master_agent.py: return empty list if no conversation_id, else load last 20 messages from DB via ConversationService
-- [ ] T034 Implement _format_mcp_tools() method in backend/src/agents/master_agent.py: convert MCP tool definitions to OpenAI function calling format
-- [ ] T035 Implement _execute_tools() method in backend/src/agents/master_agent.py: loop through tool_calls, check confirmation requirements, call mcp_session.call_tool()
-- [ ] T036 Implement _check_confirmation_needed() method in backend/src/agents/master_agent.py: check if any tool call requires confirmation
-- [ ] T037 Implement process_message() method in backend/src/agents/master_agent.py: load history, call OpenAI API with tools, handle tool_calls, return response dict with message/conversation_id/requires_confirmation
+- [X] T031 Create MasterAgent class in backend/src/agents/master_agent.py with __init__(self, user_id, conversation_id=None) and instantiate all sub-agents
+- [X] T032 Implement connect_mcp() method in backend/src/agents/master_agent.py: create StdioServerParameters, connect via stdio_client, list tools
+- [X] T033 Implement _load_history() method in backend/src/agents/master_agent.py: return empty list if no conversation_id, else load last 20 messages from DB via ConversationService
+- [X] T034 Implement _format_mcp_tools() method in backend/src/agents/master_agent.py: convert MCP tool definitions to OpenAI function calling format
+- [X] T035 Implement _execute_tools() method in backend/src/agents/master_agent.py: loop through tool_calls, check confirmation requirements, call mcp_session.call_tool()
+- [X] T036 Implement _check_confirmation_needed() method in backend/src/agents/master_agent.py: check if any tool call requires confirmation
+- [X] T037 Implement process_message() method in backend/src/agents/master_agent.py: load history, call OpenAI API with tools, handle tool_calls, return response dict with message/conversation_id/requires_confirmation
 
 **Checkpoint**: Master Agent can process messages, route to MCP tools, and handle confirmations
 
