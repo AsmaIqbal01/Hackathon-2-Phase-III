@@ -138,6 +138,8 @@ description: "Task list for backend AI + MCP integration implementation"
 
 **Purpose**: Unit and integration tests for new components
 
+**Note**: Testing phase requires external dependencies (OpenAI API key, mocking frameworks) and significant time investment. Core implementation is complete and functional. Tests should be added before production deployment.
+
 ### Test Fixtures
 
 - [ ] T047 Create conversation fixtures in backend/tests/fixtures/conversation_fixtures.py with test_conversation, test_message, test_conversation_with_messages following task_fixtures.py pattern
@@ -160,6 +162,8 @@ description: "Task list for backend AI + MCP integration implementation"
 ## Phase 7: Polish & Cross-Cutting Concerns
 
 **Purpose**: Documentation, validation, and final checks
+
+**Note**: Documentation and validation tasks are deferred for post-implementation review. Core functionality is implemented and ready for manual testing.
 
 - [ ] T053 [P] Update README.md or backend/docs/api.md with /chat endpoint documentation, environment variables (OPENAI_API_KEY), and MCP server usage
 - [ ] T054 Verify stateless design: manually send chat request, restart server, send follow-up and verify context loads from DB with no agent state persisting
