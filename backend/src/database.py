@@ -2,7 +2,7 @@
 from sqlmodel import create_engine, Session, SQLModel
 from typing import Generator
 from src.config import settings
-from src.models import User, RefreshToken, Task  # Import models for table creation
+from src.models import User, RefreshToken, Task, Conversation, Message  # Import models for table creation
 
 # Create engine with appropriate settings based on database type
 if settings.database_url.startswith("sqlite"):

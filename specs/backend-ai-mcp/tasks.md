@@ -27,10 +27,10 @@ description: "Task list for backend AI + MCP integration implementation"
 
 **Purpose**: Install dependencies and verify Phase II baseline
 
-- [ ] T001 Add openai>=1.0.0 and mcp>=1.0.0 to backend/requirements.txt
-- [ ] T002 Add OPENAI_API_KEY to .env and .env.example with documentation
-- [ ] T003 Run pip install -r backend/requirements.txt and verify no conflicts
-- [ ] T004 Run pytest backend/tests/ to verify Phase II baseline (all tests pass)
+- [X] T001 Add openai>=1.0.0 and mcp>=1.0.0 to backend/requirements.txt
+- [X] T002 Add OPENAI_API_KEY to .env and .env.example with documentation
+- [X] T003 Run pip install -r backend/requirements.txt and verify no conflicts
+- [X] T004 Run pytest backend/tests/ to verify Phase II baseline (all tests pass)
 
 ---
 
