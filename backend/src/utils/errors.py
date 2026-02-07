@@ -73,3 +73,18 @@ class ValidationError(TaskError):
         if field:
             message = f"{field}: {message}"
         super().__init__(message=message, status_code=400)
+
+
+class ConversationNotFoundError(TaskError):
+    """Exception raised when a conversation is not found.
+
+    Used when a conversation with the given ID does not exist for the authenticated user.
+    Returns 404 Not Found status code.
+    """
+
+    def __init__(self, conversation_id: str):
+        super().__init__(
+            message=f"Conversation with id '{conversation_id}' not found",
+            status_code=404
+        )
+        self.conversation_id = conversation_id

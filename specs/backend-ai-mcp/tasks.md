@@ -42,22 +42,22 @@ description: "Task list for backend AI + MCP integration implementation"
 
 ### Database Models
 
-- [ ] T005 [P] Create Conversation model in backend/src/models/conversation.py with fields: id (UUID), user_id (str, indexed), title (Optional[str]), created_at, updated_at
-- [ ] T006 [P] Create Message model in backend/src/models/message.py with fields: id (UUID), conversation_id (FK), role (str), content (str), metadata (JSON), created_at, and composite index idx_messages_conversation
-- [ ] T007 Update backend/src/models/__init__.py to import and export Conversation and Message
-- [ ] T008 Update backend/src/database.py imports (line 4) to include Conversation and Message
-- [ ] T009 Run database migration using SQLModel.metadata.create_all or alembic revision --autogenerate -m "Add Conversation and Message models" then alembic upgrade head
+- [X] T005 [P] Create Conversation model in backend/src/models/conversation.py with fields: id (UUID), user_id (str, indexed), title (Optional[str]), created_at, updated_at
+- [X] T006 [P] Create Message model in backend/src/models/message.py with fields: id (UUID), conversation_id (FK), role (str), content (str), metadata (JSON), created_at, and composite index idx_messages_conversation
+- [X] T007 Update backend/src/models/__init__.py to import and export Conversation and Message
+- [X] T008 Update backend/src/database.py imports (line 4) to include Conversation and Message
+- [X] T009 Run database migration using SQLModel.metadata.create_all or alembic revision --autogenerate -m "Add Conversation and Message models" then alembic upgrade head
 
 ### ConversationService
 
-- [ ] T010 Add ConversationNotFoundError to backend/src/utils/errors.py following TaskNotFoundError pattern
-- [ ] T011 Create ConversationService class in backend/src/services/conversation_service.py with constructor __init__(self, db: Session, user_id: str)
-- [ ] T012 [P] Implement create_conversation method in backend/src/services/conversation_service.py
-- [ ] T013 [P] Implement get_conversation method with user ownership enforcement in backend/src/services/conversation_service.py
-- [ ] T014 [P] Implement list_conversations method (limit=50, ordered by updated_at desc) in backend/src/services/conversation_service.py
-- [ ] T015 Implement add_message method with conversation ownership validation in backend/src/services/conversation_service.py
-- [ ] T016 Implement get_messages method (ordered by created_at asc) in backend/src/services/conversation_service.py
-- [ ] T017 Implement delete_conversation method with cascade delete in backend/src/services/conversation_service.py
+- [X] T010 Add ConversationNotFoundError to backend/src/utils/errors.py following TaskNotFoundError pattern
+- [X] T011 Create ConversationService class in backend/src/services/conversation_service.py with constructor __init__(self, db: Session, user_id: str)
+- [X] T012 [P] Implement create_conversation method in backend/src/services/conversation_service.py
+- [X] T013 [P] Implement get_conversation method with user ownership enforcement in backend/src/services/conversation_service.py
+- [X] T014 [P] Implement list_conversations method (limit=50, ordered by updated_at desc) in backend/src/services/conversation_service.py
+- [X] T015 Implement add_message method with conversation ownership validation in backend/src/services/conversation_service.py
+- [X] T016 Implement get_messages method (ordered by created_at asc) in backend/src/services/conversation_service.py
+- [X] T017 Implement delete_conversation method with cascade delete in backend/src/services/conversation_service.py
 
 **Checkpoint**: Foundation ready - MCP and agent components can now be implemented
 
@@ -69,18 +69,18 @@ description: "Task list for backend AI + MCP integration implementation"
 
 ### MCP Infrastructure
 
-- [ ] T018 Create backend/src/mcp/__init__.py (empty file to make module)
-- [ ] T019 Create MCP context manager in backend/src/mcp/context.py with get_context_user_id() and get_db_session() functions
-- [ ] T020 Initialize MCP Server in backend/src/mcp/server.py: import Server and stdio_server, create app = Server("task-management-mcp"), stub async def main()
+- [X] T018 Create backend/src/mcp/__init__.py (empty file to make module)
+- [X] T019 Create MCP context manager in backend/src/mcp/context.py with get_context_user_id() and get_db_session() functions
+- [X] T020 Initialize MCP Server in backend/src/mcp/server.py: import Server and stdio_server, create app = Server("task-management-mcp"), stub async def main()
 
 ### MCP Tools (Task Operations)
 
-- [ ] T021 [P] Implement add_task tool in backend/src/mcp/server.py with signature async def add_task(title, description="", priority="medium", tags=[]) delegating to TaskService.create_task
-- [ ] T022 [P] Implement list_tasks tool in backend/src/mcp/server.py with signature async def list_tasks(status=None, priority=None, tags=None, sort_by=None) delegating to TaskService.list_tasks
-- [ ] T023 [P] Implement complete_task tool in backend/src/mcp/server.py with signature async def complete_task(task_id) delegating to TaskService.update_task with status="completed"
-- [ ] T024 [P] Implement update_task tool in backend/src/mcp/server.py with signature async def update_task(task_id, title=None, description=None, status=None, priority=None, tags=None) delegating to TaskService.update_task
-- [ ] T025 [P] Implement delete_task tool in backend/src/mcp/server.py with signature async def delete_task(task_id) delegating to TaskService.delete_task
-- [ ] T026 Complete MCP main() function in backend/src/mcp/server.py: async with stdio_server() as (read_stream, write_stream): await app.run(...) and add if __name__ == "__main__": asyncio.run(main())
+- [X] T021 [P] Implement add_task tool in backend/src/mcp/server.py with signature async def add_task(title, description="", priority="medium", tags=[]) delegating to TaskService.create_task
+- [X] T022 [P] Implement list_tasks tool in backend/src/mcp/server.py with signature async def list_tasks(status=None, priority=None, tags=None, sort_by=None) delegating to TaskService.list_tasks
+- [X] T023 [P] Implement complete_task tool in backend/src/mcp/server.py with signature async def complete_task(task_id) delegating to TaskService.update_task with status="completed"
+- [X] T024 [P] Implement update_task tool in backend/src/mcp/server.py with signature async def update_task(task_id, title=None, description=None, status=None, priority=None, tags=None) delegating to TaskService.update_task
+- [X] T025 [P] Implement delete_task tool in backend/src/mcp/server.py with signature async def delete_task(task_id) delegating to TaskService.delete_task
+- [X] T026 Complete MCP main() function in backend/src/mcp/server.py: async with stdio_server() as (read_stream, write_stream): await app.run(...) and add if __name__ == "__main__": asyncio.run(main())
 
 **Checkpoint**: MCP server can run standalone and expose task tools
 
