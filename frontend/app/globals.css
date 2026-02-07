@@ -1,0 +1,276 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   CYBERPUNK DESIGN SYSTEM — Tailwind CSS v4
+   Feature: F02-cyberpunk-ui-redesign
+   Task: T001
+   ============================================================================ */
+
+@theme {
+  /* === COLOR PALETTE === */
+
+  /* Base colors (dark backgrounds) */
+  --color-cyber-bg: #0a0a0f;
+  --color-cyber-surface: #12121a;
+  --color-cyber-surface-hover: #1a1a2e;
+  --color-cyber-border: #2a2a3e;
+
+  /* Text colors */
+  --color-cyber-text: #e0e0ff;
+  --color-cyber-text-muted: #8888aa;
+
+  /* Neon accent colors */
+  --color-neon-pink: #ff2d7b;
+  --color-neon-blue: #00d4ff;
+  --color-neon-purple: #b44dff;
+  --color-neon-green: #00ff88;
+  --color-neon-red: #ff3355;
+  --color-neon-yellow: #ffcc00;
+
+  /* === GLOW SHADOWS === */
+  --shadow-glow-pink: 0 0 15px rgba(255, 45, 123, 0.5), 0 0 30px rgba(255, 45, 123, 0.2);
+  --shadow-glow-blue: 0 0 15px rgba(0, 212, 255, 0.5), 0 0 30px rgba(0, 212, 255, 0.2);
+  --shadow-glow-purple: 0 0 15px rgba(180, 77, 255, 0.5), 0 0 30px rgba(180, 77, 255, 0.2);
+  --shadow-glow-green: 0 0 15px rgba(0, 255, 136, 0.5), 0 0 30px rgba(0, 255, 136, 0.2);
+  --shadow-glow-red: 0 0 15px rgba(255, 51, 85, 0.5), 0 0 30px rgba(255, 51, 85, 0.2);
+
+  /* === TYPOGRAPHY === */
+  --font-heading: 'Orbitron', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* === KEYFRAME ANIMATIONS === */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes neon-pulse {
+  0%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.8;
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === BASE LAYER === */
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-cyber-bg);
+    color: var(--color-cyber-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Headings use Orbitron */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  /* Focus visible for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--color-neon-blue);
+    outline-offset: 2px;
+  }
+
+  /* Scrollbar styling for webkit browsers */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-cyber-bg);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-cyber-border);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-neon-purple);
+  }
+}
+
+/* === UTILITY CLASSES === */
+
+@layer utilities {
+  /* Shimmer effect for skeleton loaders */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--color-cyber-surface) 25%,
+      var(--color-cyber-surface-hover) 50%,
+      var(--color-cyber-surface) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Neon text glow */
+  .text-glow-pink {
+    text-shadow: 0 0 10px rgba(255, 45, 123, 0.7), 0 0 20px rgba(255, 45, 123, 0.4);
+  }
+
+  .text-glow-blue {
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.7), 0 0 20px rgba(0, 212, 255, 0.4);
+  }
+
+  .text-glow-purple {
+    text-shadow: 0 0 10px rgba(180, 77, 255, 0.7), 0 0 20px rgba(180, 77, 255, 0.4);
+  }
+
+  /* Neon border glow */
+  .border-glow-pink {
+    box-shadow: 0 0 10px rgba(255, 45, 123, 0.3), inset 0 0 10px rgba(255, 45, 123, 0.1);
+  }
+
+  .border-glow-blue {
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3), inset 0 0 10px rgba(0, 212, 255, 0.1);
+  }
+
+  .border-glow-purple {
+    box-shadow: 0 0 10px rgba(180, 77, 255, 0.3), inset 0 0 10px rgba(180, 77, 255, 0.1);
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    background: rgba(18, 18, 26, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Neon pulse animation */
+  .animate-neon-pulse {
+    animation: neon-pulse 2s ease-in-out infinite;
+  }
+
+  /* Spinner animation */
+  .animate-spin-slow {
+    animation: spin 1.5s linear infinite;
+  }
+
+  /* Fade in animation */
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+}
+
+/* === REDUCED MOTION === */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .shimmer {
+    animation: none;
+    background: var(--color-cyber-surface);
+  }
+
+  .animate-neon-pulse,
+  .animate-spin-slow,
+  .animate-fade-in {
+    animation: none;
+  }
+}
+
+/* === COMPONENT BASE STYLES === */
+
+@layer components {
+  /* Cyberpunk card style */
+  .cyber-card {
+    background-color: var(--color-cyber-surface);
+    border: 1px solid var(--color-cyber-border);
+    border-radius: 0.5rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .cyber-card:hover {
+    border-color: rgba(180, 77, 255, 0.5);
+    box-shadow: 0 0 20px rgba(180, 77, 255, 0.15);
+  }
+
+  /* Cyberpunk input style */
+  .cyber-input {
+    background-color: var(--color-cyber-surface);
+    border: 1px solid var(--color-cyber-border);
+    color: var(--color-cyber-text);
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .cyber-input::placeholder {
+    color: var(--color-cyber-text-muted);
+  }
+
+  .cyber-input:focus {
+    border-color: var(--color-neon-blue);
+    box-shadow: var(--shadow-glow-blue);
+    outline: none;
+  }
+
+  .cyber-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Cyberpunk button base */
+  .cyber-btn {
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 0.375rem;
+    transition: all 0.15s ease;
+  }
+
+  .cyber-btn:active {
+    transform: scale(0.97);
+  }
+
+  .cyber-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
