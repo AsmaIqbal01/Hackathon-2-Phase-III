@@ -19,7 +19,7 @@ from fastapi.exceptions import RequestValidationError
 from contextlib import asynccontextmanager
 from src.config import settings
 from src.database import create_db_and_tables
-from src.api.routes import tasks, auth
+from src.api.routes import tasks, auth, chat
 from src.utils.errors import TaskError, TaskNotFoundError, UnauthorizedAccessError, AuthError
 from src.schemas.error_schemas import ErrorResponse, ErrorDetail
 
@@ -209,6 +209,12 @@ app.include_router(
     tasks.router,
     prefix="/api",
     tags=["Tasks"]
+)
+
+app.include_router(
+    chat.router,
+    prefix="/api",
+    tags=["Chat"]
 )
 
 

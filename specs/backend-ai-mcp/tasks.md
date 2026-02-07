@@ -117,18 +117,18 @@ description: "Task list for backend AI + MCP integration implementation"
 
 ### Schemas
 
-- [ ] T038 Create backend/src/schemas/chat_schemas.py with ChatRequest (message, conversation_id, confirm_action), ChatResponse (message, conversation_id, requires_confirmation, confirmation_details), ConversationResponse (id, title, created_at, updated_at), MessageResponse (id, role, content, created_at) schemas
+- [X] T038 Create backend/src/schemas/chat_schemas.py with ChatRequest (message, conversation_id, confirm_action), ChatResponse (message, conversation_id, requires_confirmation, confirmation_details), ConversationResponse (id, title, created_at, updated_at), MessageResponse (id, role, content, created_at) schemas
 
 ### Chat Router
 
-- [ ] T039 Create chat router in backend/src/api/routes/chat.py with imports and router = APIRouter(prefix="/chat", tags=["chat"])
-- [ ] T040 Implement POST /chat endpoint part 1 in backend/src/api/routes/chat.py: handle confirmation responses (if request.confirm_action exists, execute via agent.confirmation_agent.execute_confirmed)
-- [ ] T041 Implement POST /chat endpoint part 2 in backend/src/api/routes/chat.py: normal message processing (instantiate MasterAgent, connect MCP, process message)
-- [ ] T042 Implement POST /chat endpoint part 3 in backend/src/api/routes/chat.py: persistence logic (create or get conversation, save user message, save assistant response via ConversationService.add_message)
-- [ ] T043 [P] Implement GET /conversations endpoint in backend/src/api/routes/chat.py: list user's conversations via ConversationService.list_conversations()
-- [ ] T044 [P] Implement GET /conversations/{conversation_id}/messages endpoint in backend/src/api/routes/chat.py: get conversation messages via ConversationService.get_messages()
-- [ ] T045 [P] Implement DELETE /conversations/{conversation_id} endpoint in backend/src/api/routes/chat.py: delete conversation via ConversationService.delete_conversation()
-- [ ] T046 Register chat router in backend/src/main.py: import chat_router and call app.include_router(chat_router)
+- [X] T039 Create chat router in backend/src/api/routes/chat.py with imports and router = APIRouter(prefix="/chat", tags=["chat"])
+- [X] T040 Implement POST /chat endpoint part 1 in backend/src/api/routes/chat.py: handle confirmation responses (if request.confirm_action exists, execute via agent.confirmation_agent.execute_confirmed)
+- [X] T041 Implement POST /chat endpoint part 2 in backend/src/api/routes/chat.py: normal message processing (instantiate MasterAgent, connect MCP, process message)
+- [X] T042 Implement POST /chat endpoint part 3 in backend/src/api/routes/chat.py: persistence logic (create or get conversation, save user message, save assistant response via ConversationService.add_message)
+- [X] T043 [P] Implement GET /conversations endpoint in backend/src/api/routes/chat.py: list user's conversations via ConversationService.list_conversations()
+- [X] T044 [P] Implement GET /conversations/{conversation_id}/messages endpoint in backend/src/api/routes/chat.py: get conversation messages via ConversationService.get_messages()
+- [X] T045 [P] Implement DELETE /conversations/{conversation_id} endpoint in backend/src/api/routes/chat.py: delete conversation via ConversationService.delete_conversation()
+- [X] T046 Register chat router in backend/src/main.py: import chat_router and call app.include_router(chat_router)
 
 **Checkpoint**: Chat endpoints functional - users can send messages, view history, manage conversations
 
