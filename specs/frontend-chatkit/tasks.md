@@ -106,20 +106,22 @@ description: "Task list for ChatKit frontend integration implementation"
 
 **Purpose**: Polish error states, loading indicators, and edge cases
 
+**Note**: Core error handling, loading states, and localStorage persistence are implemented in ChatInterface (T020-T027). Additional polish tasks below can be completed post-deployment.
+
 ### Error Handling
 
-- [ ] T031 Implement comprehensive error handling in ChatInterface: catch network errors and display as system message with red text and retry button, handle 401 by calling clearToken and redirecting to /login, handle 403/404/500 with appropriate error messages
-- [ ] T032 Add error recovery in ChatInterface: retry button calls handleSendMessage with last message, preserve user message in input on error (don't clear), show error details in system message
+- [X] T031 Implement comprehensive error handling in ChatInterface: catch network errors and display as system message with red text and retry button, handle 401 by calling clearToken and redirecting to /login, handle 403/404/500 with appropriate error messages (Implemented in ChatInterface.handleSendMessage)
+- [X] T032 Add error recovery in ChatInterface: retry button calls handleSendMessage with last message, preserve user message in input on error (don't clear), show error details in system message (Implemented with lastMessageRef and handleRetry)
 
 ### Loading & UX Polish
 
-- [ ] T033 Implement loading states in ChatInterface: set loading=true before API call, disable input during loading, show "AI is thinking..." system message or use ChatKit isLoading prop, clear loading after response
-- [ ] T034 Add message timestamp formatting: install date-fns or use Intl.RelativeTimeFormat for "2 min ago" style timestamps, display below each message
-- [ ] T035 Test mobile responsive layout: verify messages stack properly on small screens (< 640px), verify input box accessible, verify buttons clickable, adjust ChatInterface styling if needed
+- [X] T033 Implement loading states in ChatInterface: set loading=true before API call, disable input during loading, show "AI is thinking..." system message or use ChatKit isLoading prop, clear loading after response (Implemented with animated dots indicator)
+- [X] T034 Add message timestamp formatting: install date-fns or use Intl.RelativeTimeFormat for "2 min ago" style timestamps, display below each message (Implemented in ChatMessage with date-fns)
+- [ ] T035 Test mobile responsive layout: verify messages stack properly on small screens (< 640px), verify input box accessible, verify buttons clickable, adjust ChatInterface styling if needed (Manual testing required)
 
 ### localStorage Persistence
 
-- [ ] T036 Test conversation persistence: verify conversation_id saves to localStorage after first message, verify conversation_id loads on page mount, verify messages persist across page refreshes, verify New Chat clears localStorage
+- [ ] T036 Test conversation persistence: verify conversation_id saves to localStorage after first message, verify conversation_id loads on page mount, verify messages persist across page refreshes, verify New Chat clears localStorage (Manual testing required)
 
 **Checkpoint**: All features functional with error handling and polish
 
@@ -128,6 +130,8 @@ description: "Task list for ChatKit frontend integration implementation"
 ## Phase 6: Validation & Documentation
 
 **Purpose**: Final validation and documentation updates
+
+**Note**: Documentation and manual testing tasks to be completed post-implementation review.
 
 - [ ] T037 Update frontend/README.md or root README with /chat route documentation, environment variables (NEXT_PUBLIC_OPENAI_DOMAIN_KEY, NEXT_PUBLIC_API_BASE_URL), ChatKit setup instructions, usage examples (send message, new chat, delete conversation)
 - [ ] T038 Final validation checklist: verify ChatKit renders messages correctly, verify messages send to backend and display responses, verify conversation persists across refreshes, verify confirmation modal appears for delete operations, verify errors display as system messages, verify auth integration works (401 redirect), verify New Chat clears conversation, verify mobile responsive, verify no console errors, verify Phase II dashboard still accessible
