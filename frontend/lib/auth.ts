@@ -1,6 +1,7 @@
 // T006: Auth helpers for token management
 
 const TOKEN_KEY = 'auth_token';
+const USER_KEY = 'user_info';
 
 /**
  * Get JWT token from localStorage
@@ -19,11 +20,34 @@ export function setToken(token: string): void {
 }
 
 /**
- * Clear JWT token from localStorage
+ * Store user info in localStorage
+ */
+export function setUserInfo(email: string, userId: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(USER_KEY, JSON.stringify({ email, userId }));
+}
+
+/**
+ * Get user info from localStorage
+ */
+export function getUserInfo(): { email: string; userId: string } | null {
+  if (typeof window === 'undefined') return null;
+  const userInfo = localStorage.getItem(USER_KEY);
+  if (!userInfo) return null;
+  try {
+    return JSON.parse(userInfo);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Clear JWT token and user info from localStorage
  */
 export function clearToken(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
 }
 
 /**

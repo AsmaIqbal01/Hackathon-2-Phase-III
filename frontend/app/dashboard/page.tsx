@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { apiClient } from '@/lib/api'
-import { isAuthenticated, clearToken } from '@/lib/auth'
+import { isAuthenticated, clearToken, getUserInfo } from '@/lib/auth'
 import { Task } from '@/lib/types'
 import TaskList from '@/components/TaskList'
 import TaskForm from '@/components/TaskForm'
@@ -21,11 +21,19 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [userEmail, setUserEmail] = useState<string>('')
 
   // Auth check - redirect unauthenticated users
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push('/login')
+    } else {
+      // Load user info
+      const userInfo = getUserInfo()
+      if (userInfo) {
+        setUserEmail(userInfo.email)
+        console.log(`[Dashboard] User authenticated: ${userInfo.email}`)
+      }
     }
   }, [router])
 
@@ -55,7 +63,12 @@ export default function DashboardPage() {
 
   // Logout handler
   const handleLogout = () => {
+    // Log logout action (no sensitive data)
+    console.log(`[Auth] User logged out: ${userEmail}`)
+
+    // Clear all stored credentials and session data
     clearToken()
+
     toast.success('Logged out successfully')
     router.push('/login')
   }
@@ -79,9 +92,16 @@ export default function DashboardPage() {
               <div className="relative">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                  <h1 className="font-heading text-2xl font-bold text-neon-blue uppercase tracking-wider text-glow-blue">
-                    My Tasks
-                  </h1>
+                  <div>
+                    <h1 className="font-heading text-2xl font-bold text-neon-blue uppercase tracking-wider text-glow-blue">
+                      My Tasks
+                    </h1>
+                    {userEmail && (
+                      <p className="text-sm text-cyber-text-muted mt-1">
+                        {userEmail}
+                      </p>
+                    )}
+                  </div>
                   <div className="flex gap-3">
                     <NeonButton
                       variant="primary"

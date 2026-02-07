@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { apiClient } from '@/lib/api'
-import { setToken, isAuthenticated } from '@/lib/auth'
+import { setToken, setUserInfo, isAuthenticated } from '@/lib/auth'
 import { AuthResponse } from '@/lib/types'
 import BlobBackground from '@/components/ui/BlobBackground'
 import NeonInput from '@/components/ui/NeonInput'
@@ -25,6 +25,10 @@ export default function LoginPage() {
   useEffect(() => {
     if (isAuthenticated()) {
       router.push('/dashboard')
+    } else {
+      // Clear any stored form values on mount (fresh start for new user)
+      setEmail('')
+      setPassword('')
     }
   }, [router])
 
@@ -49,8 +53,13 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       })
 
-      // Store token and show success toast
+      // Store token and user info
       setToken(response.access_token)
+      setUserInfo(response.user.email, response.user.id)
+
+      // Log successful login (no sensitive data)
+      console.log(`[Auth] Login successful for user: ${response.user.email}`)
+
       toast.success('Logged in successfully')
       router.push('/dashboard')
     } catch (err) {

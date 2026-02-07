@@ -7,25 +7,38 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { isAuthenticated, clearToken } from '@/lib/auth';
+import { isAuthenticated, clearToken, getUserInfo } from '@/lib/auth';
 import ChatInterface from '@/components/chat/ChatInterface';
 import toast from 'react-hot-toast';
 
 export default function ChatPage() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>('');
 
   // Auth check
   useEffect(() => {
     setIsClient(true);
     if (!isAuthenticated()) {
       router.push('/login');
+    } else {
+      // Load user info
+      const userInfo = getUserInfo();
+      if (userInfo) {
+        setUserEmail(userInfo.email);
+        console.log(`[Chat] User authenticated: ${userInfo.email}`);
+      }
     }
   }, [router]);
 
   // Handle logout
   const handleLogout = () => {
+    // Log logout action (no sensitive data)
+    console.log(`[Auth] User logged out from chat: ${userEmail}`);
+
+    // Clear all stored credentials and session data
     clearToken();
+
     toast.success('Logged out successfully');
     router.push('/login');
   };
@@ -51,9 +64,16 @@ export default function ChatPage() {
       {/* Header */}
       <div className="bg-cyber-surface/80 backdrop-blur-md border-b border-cyber-border">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="font-heading text-2xl font-bold text-neon-blue uppercase tracking-wider text-glow-blue">
-            AI Task Assistant
-          </h1>
+          <div>
+            <h1 className="font-heading text-2xl font-bold text-neon-blue uppercase tracking-wider text-glow-blue">
+              AI Task Assistant
+            </h1>
+            {userEmail && (
+              <p className="text-sm text-cyber-text-muted mt-1">
+                {userEmail}
+              </p>
+            )}
+          </div>
           <div className="flex gap-3">
             <button
               onClick={handleNewChat}

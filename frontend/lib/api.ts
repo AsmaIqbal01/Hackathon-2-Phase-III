@@ -34,6 +34,9 @@ export async function apiClient<T>(
   // Build full URL
   const url = `${API_BASE_URL}${endpoint}`;
 
+  // Log API request (no sensitive data)
+  console.log(`[API] ${fetchOptions.method || 'GET'} ${endpoint}`);
+
   // Make request
   const response = await fetch(url, {
     ...fetchOptions,
@@ -42,6 +45,7 @@ export async function apiClient<T>(
 
   // Handle 401 Unauthorized - redirect to login
   if (response.status === 401) {
+    console.log(`[API] Unauthorized access to ${endpoint} - redirecting to login`);
     clearToken();
     if (typeof window !== 'undefined') {
       window.location.href = '/login';
@@ -58,8 +62,13 @@ export async function apiClient<T>(
       },
     }));
 
-    throw new Error(errorData.error?.message || `API error: ${response.status}`);
+    const errorMessage = errorData.error?.message || `API error: ${response.status}`;
+    console.error(`[API] Error ${response.status} on ${endpoint}: ${errorMessage}`);
+    throw new Error(errorMessage);
   }
+
+  // Log successful response
+  console.log(`[API] Success ${response.status} on ${endpoint}`);
 
   // Handle 204 No Content
   if (response.status === 204) {

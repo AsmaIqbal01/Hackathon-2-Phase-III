@@ -138,3 +138,23 @@ def prompt_for_credentials(max_retries: int = 3) -> None:
     # Should never reach here, but handle edge case
     print("Authentication failed. Exiting application.")
     sys.exit(1)
+def get_current_user() -> dict:
+    """
+    Retrieve current authenticated user from session.
+
+    Returns:
+        dict: { 'user_id': str, 'username': str, 'authenticated': bool }
+
+    Raises:
+        AuthenticationError: If no user is logged in
+    """
+    session = _get_session()
+    if not getattr(session, "authenticated", False):
+        from .exceptions import AuthenticationError
+        raise AuthenticationError("No authenticated user found")
+    
+    return {
+        "user_id": session.user_id,
+        "username": session.username,
+        "authenticated": session.authenticated
+    }

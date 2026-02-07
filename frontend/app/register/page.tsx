@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { apiClient } from '@/lib/api'
-import { setToken } from '@/lib/auth'
+import { setToken, setUserInfo } from '@/lib/auth'
 import { AuthResponse } from '@/lib/types'
 import BlobBackground from '@/components/ui/BlobBackground'
 import NeonInput from '@/components/ui/NeonInput'
@@ -42,8 +42,13 @@ export default function RegisterPage() {
         body: JSON.stringify({ email, password }),
       })
 
-      // Auto-login: store token and show success toast
+      // Auto-login: store token and user info
       setToken(response.access_token)
+      setUserInfo(response.user.email, response.user.id)
+
+      // Log successful registration (no sensitive data)
+      console.log(`[Auth] Registration successful for user: ${response.user.email}`)
+
       toast.success('Account created successfully')
       router.push('/dashboard')
     } catch (err) {
