@@ -12,7 +12,8 @@ def _get_database_url() -> str:
     psycopg v3 driver (which is what we have installed) instead of
     defaulting to psycopg2.
     """
-    url = settings.database_url.strip()
+    # Remove any whitespace that may have been accidentally added in env vars
+    url = "".join(settings.database_url.split())
     if url.startswith("postgres://"):
         # Render/Heroku use postgres:// which is deprecated
         url = url.replace("postgres://", "postgresql+psycopg://", 1)
