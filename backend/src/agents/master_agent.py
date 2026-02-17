@@ -51,7 +51,7 @@ class MasterAgent:
             user_id: Authenticated user's ID
             conversation_id: Optional conversation ID to load context
         """
-        self.user_id = user_id
+        self.user_id = str(user_id)
         self.conversation_id = conversation_id
         self.client = OpenAI()
         self.mcp_session = None
@@ -181,9 +181,12 @@ class MasterAgent:
                     "role": "tool",
                     "content": json.dumps(confirmation)
                 })
-            else:
+            elif self.mcp_session:
                 # Execute tool via MCP session
                 result = await self.mcp_session.call_tool(tool_name, arguments)
+            else:
+                result = {"error": "MCP not available, cannot execute tool"}
+                arguments = {}
 
                 results.append({
                     "tool_call_id": call.id,
@@ -238,13 +241,17 @@ class MasterAgent:
         # Build messages array
         messages = history + [{"role": "user", "content": user_message}]
 
-        # Call OpenAI API with tools
-        response = self.client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            tools=self._format_mcp_tools(self.tools),
-            tool_choice="auto"
-        )
+        # Call OpenAI API (with tools only if MCP tools are available)
+        openai_tools = self._format_mcp_tools(self.tools) if self.tools else None
+        api_kwargs = {
+            "model": "gpt-4o",
+            "messages": messages,
+        }
+        if openai_tools:
+            api_kwargs["tools"] = openai_tools
+            api_kwargs["tool_choice"] = "auto"
+
+        response = self.client.chat.completions.create(**api_kwargs)
 
         # Handle tool calls if present
         if response.choices[0].message.tool_calls:

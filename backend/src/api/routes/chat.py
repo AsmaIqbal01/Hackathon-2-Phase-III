@@ -128,7 +128,9 @@ async def chat(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Chat error: {type(e).__name__}: {str(e)}")
 
 
 @router.get("/conversations", response_model=List[ConversationResponse])
