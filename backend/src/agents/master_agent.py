@@ -4,8 +4,18 @@ import os
 from typing import List, Dict, Optional
 from uuid import UUID
 from openai import OpenAI
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
+
+# Guard MCP imports - package may not be available in all environments
+try:
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+    MCP_AVAILABLE = True
+except ImportError:
+    MCP_AVAILABLE = False
+    ClientSession = None
+    StdioServerParameters = None
+    stdio_client = None
+
 from src.agents.confirmation_agent import ConfirmationSubAgent
 from src.agents.task_agent import TaskSubAgent
 from src.agents.conversation_agent import ConversationSubAgent
@@ -44,7 +54,7 @@ class MasterAgent:
         self.user_id = user_id
         self.conversation_id = conversation_id
         self.client = OpenAI()
-        self.mcp_session: Optional[ClientSession] = None
+        self.mcp_session = None
         self.tools = []
 
         # Instantiate sub-agents
@@ -61,12 +71,21 @@ class MasterAgent:
         - Lists available tools from the server
 
         Raises:
-            RuntimeError: If connection fails
+            RuntimeError: If MCP is not available or connection fails
         """
+        if not MCP_AVAILABLE:
+            print("WARNING: MCP package not available, chat will work without MCP tools")
+            return
+
+        # Determine correct path relative to working directory
+        # On Render rootDir=backend/, locally it may be project root
+        mcp_server_path = os.path.join(os.path.dirname(__file__), "..", "mcp", "server.py")
+        mcp_server_path = os.path.abspath(mcp_server_path)
+
         # Create server parameters for stdio communication
         server_params = StdioServerParameters(
             command="python",
-            args=["backend/src/mcp/server.py"],
+            args=[mcp_server_path],
             env={"USER_ID": self.user_id}
         )
 

@@ -21,11 +21,4 @@ bcrypt>=4.0.0,<5.0.0
 
 # AI/MCP dependencies (Phase III)
 openai>=1.0.0
-mcp>=1.0.0
-
-# Development/Testing (optional)
-pytest>=7.4.4
-pytest-asyncio>=0.23.3
-pytest-cov>=4.1.0
-httpx>=0.26.0
-alembic>=1.13.1
+mcp>=1.0.0,<2.0.0
