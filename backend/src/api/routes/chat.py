@@ -5,6 +5,7 @@ from typing import List
 from uuid import UUID
 from src.auth.authenticator import get_current_user
 from src.database import get_db
+from src.models.user import User
 from src.agents.master_agent import MasterAgent
 from src.services.conversation_service import ConversationService
 from src.schemas.chat_schemas import (
@@ -23,7 +24,7 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 @router.post("", response_model=ChatResponse)
 async def chat(
     request: ChatRequest,
-    user: dict = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Process a chat message through the AI agent.
@@ -48,8 +49,8 @@ async def chat(
         HTTPException: 400 for validation errors, 401 for auth errors, 500 for server errors
     """
     try:
-        # Extract user_id from JWT
-        user_id = user["user_id"]
+        # Extract user_id from User object
+        user_id = user.id
 
         # Initialize ConversationService
         conv_service = ConversationService(db, user_id)
@@ -132,7 +133,7 @@ async def chat(
 
 @router.get("/conversations", response_model=List[ConversationResponse])
 async def list_conversations(
-    user: dict = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """List all conversations for the authenticated user.
@@ -145,7 +146,7 @@ async def list_conversations(
         List[ConversationResponse]: User's conversations ordered by updated_at desc
     """
     try:
-        user_id = user["user_id"]
+        user_id = user.id
         service = ConversationService(db, user_id)
         conversations = service.list_conversations()
 
@@ -166,7 +167,7 @@ async def list_conversations(
 @router.get("/conversations/{conversation_id}/messages", response_model=List[MessageResponse])
 async def get_conversation_messages(
     conversation_id: str,
-    user: dict = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get all messages in a conversation.
@@ -183,7 +184,7 @@ async def get_conversation_messages(
         HTTPException: 404 if conversation not found, 403 if unauthorized
     """
     try:
-        user_id = user["user_id"]
+        user_id = user.id
         service = ConversationService(db, user_id)
         messages = service.get_messages(UUID(conversation_id))
 
@@ -210,7 +211,7 @@ async def get_conversation_messages(
 @router.delete("/conversations/{conversation_id}")
 async def delete_conversation(
     conversation_id: str,
-    user: dict = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Delete a conversation and all its messages.
@@ -227,7 +228,7 @@ async def delete_conversation(
         HTTPException: 404 if conversation not found, 403 if unauthorized
     """
     try:
-        user_id = user["user_id"]
+        user_id = user.id
         service = ConversationService(db, user_id)
         service.delete_conversation(UUID(conversation_id))
 

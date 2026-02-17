@@ -153,22 +153,25 @@ def logout(
 def get_me(
     current_user: User = Depends(get_current_user)
 ) -> UserProfile:
-    """Get authenticated user's profile.
+    """Get authenticated user's profile (protected route example).
 
     Requires valid JWT access token in Authorization header.
+    This endpoint demonstrates the get_current_user dependency.
 
     **Success Response (200):**
     - `id`: User's unique identifier
     - `email`: User's email address
+    - `is_active`: Account status
     - `created_at`: Account creation timestamp
 
     **Error Responses:**
-    - `401`: Invalid or missing JWT token
+    - `401`: Invalid, expired, or missing JWT token
 
-    **Note:** password_hash is NOT included in response.
+    **Security Note:** password_hash is NEVER included in response.
     """
     return UserProfile(
         id=current_user.id,
         email=current_user.email,
+        is_active=current_user.is_active,
         created_at=current_user.created_at
     )

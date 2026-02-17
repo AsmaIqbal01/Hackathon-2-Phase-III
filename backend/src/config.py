@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_access_expire_minutes: int = 15
     jwt_refresh_expire_days: int = 7
+    jwt_issuer: str = "todo-backend-api"
+    jwt_audience: str = "todo-frontend"
+
+    # Security
+    bcrypt_rounds: int = 12  # Use 4 for development, 12+ for production
 
     @property
     def cors_origins_list(self) -> list[str]:

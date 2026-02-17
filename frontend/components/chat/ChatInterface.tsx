@@ -146,8 +146,8 @@ export default function ChatInterface() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
 
-      // Handle 401 (unauthorized)
-      if (err instanceof Error && err.message.includes('401')) {
+      // Handle 401 (unauthorized) - check status code instead of string matching
+      if (err instanceof Error && (err as any).status === 401) {
         clearToken();
         router.push('/login');
         return;
@@ -203,6 +203,13 @@ export default function ChatInterface() {
       setMessages(prev => [...prev, assistantMessage]);
 
     } catch (err) {
+      // Handle 401 (unauthorized)
+      if (err instanceof Error && (err as any).status === 401) {
+        clearToken();
+        router.push('/login');
+        return;
+      }
+
       addSystemMessage(`⚠️ Error executing action: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setLoading(false);

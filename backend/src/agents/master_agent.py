@@ -221,7 +221,7 @@ class MasterAgent:
 
         # Call OpenAI API with tools
         response = self.client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=messages,
             tools=self._format_mcp_tools(self.tools),
             tool_choice="auto"
@@ -255,7 +255,7 @@ class MasterAgent:
 
             # Continue conversation with tool results
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=messages
             )
 

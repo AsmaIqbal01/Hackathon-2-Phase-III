@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Debug Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a2e; color: #0f0; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+        pre { background: #0d0d1a; padding: 15px; overflow: auto; max-height: 400px; }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+    </style>
+</head>
+<body>
+    <h1>Login Debug Test</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="checkLocalStorage()">Check LocalStorage</button>
+    <button onclick="testTasksEndpoint()">Test /tasks</button>
+    <pre id="output">Click a button to test...</pre>
+
+    <script>
+        const API = 'http://localhost:8000/api';
+        const log = (msg, isError) => {
+            const el = document.getElementById('output');
+            el.innerHTML += '<span class="' + (isError ? 'error' : 'success') + '">' + msg + '</span>\n';
+        };
+        const clear = () => document.getElementById('output').innerHTML = '';
+
+        async function testLogin() {
+            clear();
+            log('Testing login...');
+            try {
+                const response = await fetch(API + '/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'fastuser@example.com',
+                        password: 'SecurePass123!'
+                    })
+                });
+                
+                log('Status: ' + response.status);
+                const data = await response.json();
+                log('Response: ' + JSON.stringify(data, null, 2));
+                
+                if (data.access_token) {
+                    localStorage.setItem('auth_token', data.access_token);
+                    log('Token saved to localStorage!');
+                }
+            } catch (err) {
+                log('Error: ' + err.message, true);
+            }
+        }
+
+        function checkLocalStorage() {
+            clear();
+            const token = localStorage.getItem('auth_token');
+            log('auth_token: ' + (token ? token.substring(0, 50) + '...' : 'NOT SET'));
+            const userInfo = localStorage.getItem('user_info');
+            log('user_info: ' + (userInfo || 'NOT SET'));
+        }
+
+        async function testTasksEndpoint() {
+            clear();
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                log('No token in localStorage! Login first.', true);
+                return;
+            }
+            
+            log('Testing /tasks with token...');
+            try {
+                const response = await fetch(API + '/tasks', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                log('Status: ' + response.status);
+                const data = await response.json();
+                log('Response: ' + JSON.stringify(data, null, 2));
+            } catch (err) {
+                log('Error: ' + err.message, true);
+            }
+        }
+    </script>
+</body>
+</html>

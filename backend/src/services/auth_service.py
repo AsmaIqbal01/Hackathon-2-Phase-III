@@ -1,5 +1,14 @@
-"""Authentication service with business logic for user registration, login, logout, and token management."""
-from datetime import datetime, timedelta
+"""Authentication service with business logic for user registration, login, logout, and token management.
+
+Security features:
+- Bcrypt password hashing with configurable work factor
+- JWT access tokens with iss/aud claims
+- Refresh token rotation (old token revoked on refresh)
+- SHA-256 hashed token storage (never stores raw tokens)
+- Rate limiting on login attempts
+- Generic error messages (prevents user enumeration)
+"""
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple
 from uuid import UUID
 from sqlmodel import Session, select
@@ -14,15 +23,19 @@ from src.utils.security import (
     normalize_email,
     validate_password,
     create_access_token,
-    verify_token,
     generate_refresh_token,
-    verify_refresh_token_hash,
+    hash_refresh_token,
 )
 from src.utils.rate_limiter import login_rate_limiter
 from src.config import settings
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def utc_now() -> datetime:
+    """Return current UTC time as timezone-aware datetime."""
+    return datetime.now(timezone.utc)
 
 
 class AuthService:
@@ -95,15 +108,17 @@ class AuthService:
                 }
             })
 
-        # Hash password
-        password_hash = hash_password(password)
+        # Hash password using bcrypt
+        hashed = hash_password(password)
 
-        # Create user
+        # Create user with hashed password
+        now = utc_now()
         user = User(
             email=normalized_email,
-            password_hash=password_hash,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            password_hash=hashed,
+            is_active=True,
+            created_at=now,
+            updated_at=now
         )
         self.db.add(user)
         self.db.commit()
@@ -118,6 +133,7 @@ class AuthService:
             user=UserProfile(
                 id=user.id,
                 email=user.email,
+                is_active=user.is_active,
                 created_at=user.created_at
             ),
             access_token=access_token,
@@ -165,7 +181,7 @@ class AuthService:
             select(User).where(User.email == normalized_email)
         ).first()
 
-        # Verify credentials (generic error for security)
+        # Verify credentials (generic error prevents user enumeration)
         if not user or not verify_password(password, user.password_hash):
             login_rate_limiter.record_attempt(normalized_email)
             logger.warning(f"Login failed: invalid credentials for {normalized_email}")
@@ -173,6 +189,16 @@ class AuthService:
                 "error": {
                     "code": 401,
                     "message": "Invalid credentials"
+                }
+            })
+
+        # Check if account is disabled
+        if not user.is_active:
+            logger.warning(f"Login failed: account disabled for {normalized_email}")
+            raise HTTPException(status_code=401, detail={
+                "error": {
+                    "code": 401,
+                    "message": "Account disabled"
                 }
             })
 
@@ -188,6 +214,7 @@ class AuthService:
             user=UserProfile(
                 id=user.id,
                 email=user.email,
+                is_active=user.is_active,
                 created_at=user.created_at
             ),
             access_token=access_token,
@@ -199,7 +226,10 @@ class AuthService:
     def refresh_tokens(self, refresh_token: str) -> TokenResponse:
         """Refresh access token using refresh token with rotation.
 
-        Validates refresh token, revokes old token, creates new token pair.
+        Security features:
+        - O(1) lookup via indexed token_hash (no linear scan)
+        - Token rotation: old token revoked immediately
+        - Generic error messages prevent token enumeration
 
         Args:
             refresh_token: Raw refresh token from client
@@ -210,61 +240,57 @@ class AuthService:
         Raises:
             HTTPException 401: Invalid or expired refresh token
         """
-        # Find active refresh token
-        token_records = self.db.exec(select(RefreshToken)).all()
+        # Compute hash for O(1) database lookup (token_hash is indexed)
+        token_hash = hash_refresh_token(refresh_token)
 
-        matching_token = None
-        for token_record in token_records:
-            if verify_refresh_token_hash(refresh_token, token_record.token_hash):
-                matching_token = token_record
-                break
+        # Direct lookup by hash - O(1) instead of O(n) linear scan
+        matching_token = self.db.exec(
+            select(RefreshToken).where(RefreshToken.token_hash == token_hash)
+        ).first()
 
-        # Validate token exists and is active
+        # Generic error for all failure cases (prevents enumeration)
+        invalid_token_error = HTTPException(status_code=401, detail={
+            "error": {
+                "code": 401,
+                "message": "Invalid or expired refresh token"
+            }
+        })
+
+        # Validate token exists
         if not matching_token:
             logger.warning("Refresh failed: token not found")
-            raise HTTPException(status_code=401, detail={
-                "error": {
-                    "code": 401,
-                    "message": "Invalid or expired refresh token"
-                }
-            })
+            raise invalid_token_error
 
         # Check if token is revoked
         if matching_token.revoked_at is not None:
             logger.warning(f"Refresh failed: token already revoked - {matching_token.id}")
-            raise HTTPException(status_code=401, detail={
-                "error": {
-                    "code": 401,
-                    "message": "Invalid or expired refresh token"
-                }
-            })
+            raise invalid_token_error
 
-        # Check if token is expired
-        if matching_token.expires_at < datetime.utcnow():
+        # Check if token is expired (use timezone-aware comparison)
+        now = utc_now()
+        # Handle both naive and aware datetimes for backwards compatibility
+        expires_at = matching_token.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+        if expires_at < now:
             logger.warning(f"Refresh failed: token expired - {matching_token.id}")
-            raise HTTPException(status_code=401, detail={
-                "error": {
-                    "code": 401,
-                    "message": "Invalid or expired refresh token"
-                }
-            })
+            raise invalid_token_error
 
-        # Get user
+        # Get user and verify active
         user = self.db.exec(
             select(User).where(User.id == matching_token.user_id)
         ).first()
 
         if not user:
             logger.error(f"Refresh failed: user not found - {matching_token.user_id}")
-            raise HTTPException(status_code=401, detail={
-                "error": {
-                    "code": 401,
-                    "message": "Invalid or expired refresh token"
-                }
-            })
+            raise invalid_token_error
 
-        # Revoke old token (rotation)
-        matching_token.revoked_at = datetime.utcnow()
+        if not user.is_active:
+            logger.warning(f"Refresh failed: user disabled - {user.id}")
+            raise invalid_token_error
+
+        # Revoke old token immediately (rotation)
+        matching_token.revoked_at = now
         self.db.add(matching_token)
         self.db.commit()
 
@@ -281,7 +307,10 @@ class AuthService:
         )
 
     def logout(self, user_id: UUID) -> None:
-        """Revoke all refresh tokens for a user (logout).
+        """Revoke all refresh tokens for a user (logout from all devices).
+
+        This invalidates all active sessions for the user, requiring
+        re-authentication on all devices.
 
         Args:
             user_id: User's unique identifier from JWT
@@ -307,7 +336,7 @@ class AuthService:
             .where(RefreshToken.revoked_at.is_(None))
         ).all()
 
-        now = datetime.utcnow()
+        now = utc_now()
         for token in active_tokens:
             token.revoked_at = now
             self.db.add(token)
@@ -342,32 +371,39 @@ class AuthService:
         return UserProfile(
             id=user.id,
             email=user.email,
+            is_active=user.is_active,
             created_at=user.created_at
         )
 
     def _create_token_pair(self, user: User) -> Tuple[str, str]:
-        """Internal method to create access + refresh token pair.
+        """Create access + refresh token pair for authenticated user.
+
+        Security notes:
+        - Access token: JWT with iss/aud/exp/type claims
+        - Refresh token: Opaque token, stored as SHA-256 hash
+        - Never logs or returns the raw refresh token hash
 
         Args:
-            user: User entity
+            user: Authenticated user entity
 
         Returns:
-            Tuple of (access_token, refresh_token)
+            Tuple of (access_token, raw_refresh_token)
         """
-        # Create access token (JWT)
+        # Create JWT access token with security claims
         access_token = create_access_token(
             data={"sub": str(user.id), "email": user.email}
         )
 
-        # Generate refresh token (opaque)
+        # Generate opaque refresh token (raw + hash)
         raw_refresh_token, hashed_refresh_token = generate_refresh_token()
 
-        # Store refresh token in database
+        # Store only the hash in database (never raw token)
+        now = utc_now()
         refresh_token_record = RefreshToken(
             user_id=user.id,
             token_hash=hashed_refresh_token,
-            expires_at=datetime.utcnow() + timedelta(days=settings.jwt_refresh_expire_days),
-            created_at=datetime.utcnow()
+            expires_at=now + timedelta(days=settings.jwt_refresh_expire_days),
+            created_at=now
         )
         self.db.add(refresh_token_record)
         self.db.commit()

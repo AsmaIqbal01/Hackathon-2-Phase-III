@@ -47,13 +47,17 @@ class RefreshRequest(BaseModel):
 class UserProfile(BaseModel):
     """User profile information (no sensitive data).
 
+    Note: password_hash is NEVER included in responses.
+
     Attributes:
-        id: User's unique identifier
-        email: User's email address
-        created_at: Account creation timestamp
+        id: User's unique identifier (UUID v4)
+        email: User's email address (normalized lowercase)
+        is_active: Account status (True = active, False = disabled)
+        created_at: Account creation timestamp (UTC)
     """
     id: UUID = Field(..., description="User's unique identifier")
     email: str = Field(..., description="User's email address")
+    is_active: bool = Field(default=True, description="Account status")
     created_at: datetime = Field(..., description="Account creation timestamp")
 
     class Config:

@@ -122,14 +122,14 @@ Phase III introduces AI-driven task management through a stateless backend archi
 
 5. **Run the backend server:**
    ```bash
-   uvicorn src.main:app --reload
+   uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-   Backend accessible at: **http://127.0.0.1:8000**
+   Backend accessible at: **http://localhost:8000**
 
    API Documentation:
-   - Swagger UI: http://127.0.0.1:8000/docs
-   - ReDoc: http://127.0.0.1:8000/redoc
+   - Swagger UI: http://localhost:8000/docs
+   - ReDoc: http://localhost:8000/redoc
 
 ### Frontend Setup
 
@@ -138,27 +138,28 @@ Phase III introduces AI-driven task management through a stateless backend archi
    cd frontend
    ```
 
-2. **Install dependencies:**
+2. **Install Dependencies:**
    ```bash
    npm install
    ```
 
-3. **Configure environment variables:**
+3. **Configure Environment Variables:**
+   Create a `.env.local` file in the `frontend/` directory:
    ```bash
    cp .env.example .env.local
    ```
 
-   Edit `.env.local`:
+   Edit `.env.local` and set your backend API URL:
    ```env
    NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
    ```
 
-4. **Run the development server:**
+4. **Run the Development Server:**
    ```bash
    npm run dev
    ```
 
-   Frontend accessible at: **http://localhost:3000**
+   The application will be available at [http://localhost:3000](http://localhost:3000).
 
 ### Verify Installation
 

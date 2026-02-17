@@ -56,13 +56,20 @@ export async function apiClient<T>(
   // Handle non-OK responses
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({
-      error: {
-        code: response.status,
-        message: response.statusText,
-      },
+      detail: `API error: ${response.status}`,
     }));
 
-    const errorMessage = errorData.error?.message || `API error: ${response.status}`;
+    // FastAPI returns errors in { detail: { error: { code, message } } } format
+    // or sometimes just { detail: "message" }
+    let errorMessage: string;
+    if (typeof errorData.detail === 'object' && errorData.detail?.error) {
+      errorMessage = errorData.detail.error.message || `API error: ${response.status}`;
+    } else if (typeof errorData.detail === 'string') {
+      errorMessage = errorData.detail;
+    } else {
+      errorMessage = errorData.error?.message || `API error: ${response.status}`;
+    }
+
     console.error(`[API] Error ${response.status} on ${endpoint}: ${errorMessage}`);
     throw new Error(errorMessage);
   }
