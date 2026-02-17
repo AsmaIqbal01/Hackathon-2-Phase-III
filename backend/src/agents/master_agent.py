@@ -53,7 +53,11 @@ class MasterAgent:
         """
         self.user_id = str(user_id)
         self.conversation_id = conversation_id
-        self.client = OpenAI()
+        try:
+            self.client = OpenAI()
+        except Exception as e:
+            print(f"WARNING: OpenAI client init failed: {e}")
+            self.client = None
         self.mcp_session = None
         self.tools = []
 
@@ -235,6 +239,12 @@ class MasterAgent:
         Returns:
             dict: Response with message, conversation_id, and confirmation status
         """
+        if not self.client:
+            return {
+                "message": "AI service is currently unavailable. Please check OPENAI_API_KEY configuration.",
+                "requires_confirmation": False,
+            }
+
         # Load conversation history
         history = self._load_history()
 
