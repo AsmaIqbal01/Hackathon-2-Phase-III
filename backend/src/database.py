@@ -12,16 +12,20 @@ def _get_database_url() -> str:
     psycopg v3 driver (which is what we have installed) instead of
     defaulting to psycopg2.
     """
-    url = settings.database_url
+    url = settings.database_url.strip()
     if url.startswith("postgres://"):
         # Render/Heroku use postgres:// which is deprecated
         url = url.replace("postgres://", "postgresql+psycopg://", 1)
     elif url.startswith("postgresql://") and "+psycopg" not in url:
         url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+    # Log the scheme (not the full URL which contains credentials)
+    scheme = url.split("://")[0] if "://" in url else "unknown"
+    print(f"Database URL scheme: {scheme}")
     return url
 
 
 db_url = _get_database_url()
+print(f"Using database URL starting with: {db_url[:30]}...")
 
 # Create engine with appropriate settings based on database type
 if db_url.startswith("sqlite"):
