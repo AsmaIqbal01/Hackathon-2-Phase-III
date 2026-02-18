@@ -9,9 +9,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import ChatMessage from './ChatMessage';
 import ConfirmationModal from './ConfirmationModal';
-import { ChatMessage as ChatMessageType, ChatRequest, ConfirmationDetails } from '@/lib/types';
-import { sendChatMessage, loadConversationHistory, CONVERSATION_ID_KEY } from '@/lib/chatApi';
-import { getToken, clearToken } from '@/lib/auth';
+import { ChatMessage as ChatMessageType, ChatRequest, ConfirmationDetails } from '../../lib/types';
+import { sendChatMessage, loadConversationHistory, CONVERSATION_ID_KEY } from '../../lib/chatApi';
+import { getToken, clearToken } from '../../lib/auth';
 import toast from 'react-hot-toast';
 
 export default function ChatInterface() {
