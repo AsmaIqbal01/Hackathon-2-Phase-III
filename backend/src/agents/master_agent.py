@@ -86,23 +86,35 @@ class MasterAgent:
             print("WARNING: MCP package not available, chat will work without MCP tools")
             return
 
-        # Determine correct path relative to working directory
-        # On Render rootDir=backend/, locally it may be project root
-        mcp_server_path = os.path.join(os.path.dirname(__file__), "..", "mcp", "server.py")
-        mcp_server_path = os.path.abspath(mcp_server_path)
+        try:
+            # Determine correct path relative to working directory
+            mcp_server_path = os.path.join(os.path.dirname(__file__), "..", "mcp", "server.py")
+            mcp_server_path = os.path.abspath(mcp_server_path)
 
-        # Create server parameters for stdio communication
-        server_params = StdioServerParameters(
-            command="python",
-            args=[mcp_server_path],
-            env={"USER_ID": self.user_id}
-        )
+            # Create server parameters for stdio communication
+            server_params = StdioServerParameters(
+                command="python",
+                args=[mcp_server_path],
+                env={"USER_ID": self.user_id}
+            )
 
-        # Connect to MCP server
-        self.mcp_session = await stdio_client(server_params).__aenter__()
+            # Connect to MCP server
+            result = await stdio_client(server_params).__aenter__()
 
-        # List available tools
-        self.tools = await self.mcp_session.list_tools()
+            # Handle different MCP client API versions
+            if isinstance(result, tuple):
+                # Newer MCP versions return (read_stream, write_stream) or (session, ...)
+                self.mcp_session = result[0] if hasattr(result[0], 'list_tools') else None
+            else:
+                self.mcp_session = result
+
+            # List available tools
+            if self.mcp_session:
+                self.tools = await self.mcp_session.list_tools()
+        except Exception as e:
+            print(f"WARNING: MCP connection failed: {e}, chat will work without MCP tools")
+            self.mcp_session = None
+            self.tools = []
 
     def _load_history(self) -> List[dict]:
         """Load conversation history from database.
