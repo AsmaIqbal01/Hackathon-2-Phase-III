@@ -5,8 +5,8 @@
 
 import { ChatRequest, ChatResponse, ChatMessage } from './types';
 
-// Constants
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+// Constants - use same env var as api.ts
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 export const CONVERSATION_ID_KEY = 'phase3_conversation_id';
 
 /**
@@ -19,7 +19,7 @@ export async function sendChatMessage(
   // Log chat request (no sensitive data)
   console.log(`[Chat] Sending message: ${request.message.substring(0, 50)}${request.message.length > 50 ? '...' : ''}`);
 
-  const response = await fetch(`${API_BASE_URL}/api/chat`, {
+  const response = await fetch(`${API_BASE_URL}/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export async function loadConversationHistory(
   console.log(`[Chat] Loading conversation history: ${conversationId}`);
 
   const response = await fetch(
-    `${API_BASE_URL}/api/chat/conversations/${conversationId}/messages`,
+    `${API_BASE_URL}/chat/conversations/${conversationId}/messages`,
     {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -102,7 +102,7 @@ export async function deleteConversation(
   token: string
 ): Promise<void> {
   const response = await fetch(
-    `${API_BASE_URL}/api/chat/conversations/${conversationId}`,
+    `${API_BASE_URL}/chat/conversations/${conversationId}`,
     {
       method: 'DELETE',
       headers: {

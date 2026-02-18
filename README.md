@@ -151,7 +151,7 @@ Phase III introduces AI-driven task management through a stateless backend archi
 
    Edit `.env.local` and set your backend API URL:
    ```env
-   NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+   NEXT_PUBLIC_API_URL=http://localhost:8000/api
    ```
 
 4. **Run the Development Server:**
@@ -452,50 +452,45 @@ npm test
 
 ---
 
+## 🌐 Live Demo
+
+- **Frontend**: [https://hackathon-2-phase-iii-lilac.vercel.app](https://hackathon-2-phase-iii-lilac.vercel.app)
+- **Backend API**: [https://hackathon-2-phase-iii.onrender.com](https://hackathon-2-phase-iii.onrender.com)
+- **API Docs**: [https://hackathon-2-phase-iii.onrender.com/docs](https://hackathon-2-phase-iii.onrender.com/docs)
+
 ## 📦 Deployment
 
-### Backend (Railway / Heroku)
+### Backend (Render)
 
 1. **Set environment variables:**
    ```env
    DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
-   OPENAI_API_KEY=sk-proj-...
+   LLM_BASE_URL=https://api.groq.com/openai/v1
+   LLM_API_KEY=gsk_your-groq-key
+   LLM_MODEL=llama-3.3-70b-versatile
    JWT_SECRET=<generated-secret>
    CORS_ORIGINS=https://your-frontend.vercel.app
    ENVIRONMENT=production
    ```
 
-2. **Deploy via Railway:**
-   ```bash
-   railway login
-   railway link
-   railway up
-   ```
+2. **Deploy via Render:**
+   - Connect GitHub repository
+   - Set Root Directory to `backend`
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `uvicorn src.main:app --host 0.0.0.0 --port $PORT`
 
-3. **Or via Heroku:**
-   ```bash
-   heroku create your-app-name
-   git push heroku main
-   ```
-
-### Frontend (Vercel / Netlify)
+### Frontend (Vercel)
 
 1. **Set environment variable:**
    ```env
-   NEXT_PUBLIC_API_BASE_URL=https://your-backend.railway.app
+   NEXT_PUBLIC_API_URL=https://your-backend.onrender.com/api
    ```
 
 2. **Deploy via Vercel:**
-   ```bash
-   vercel login
-   vercel --prod
-   ```
-
-3. **Or via GitHub integration:**
-   - Push to GitHub
-   - Connect repository in Vercel dashboard
-   - Configure environment variables
-   - Deploy automatically
+   - Connect GitHub repository
+   - Set Root Directory to `frontend`
+   - Framework Preset: Next.js
+   - Deploy automatically on push
 
 ### Database Migration
 
@@ -540,7 +535,7 @@ uvicorn src.main:app --reload
 **Problem**: `API_BASE_URL is undefined`
 ```bash
 # Solution: Create .env.local with:
-echo "NEXT_PUBLIC_API_BASE_URL=http://localhost:8000" > .env.local
+echo "NEXT_PUBLIC_API_URL=http://localhost:8000/api" > .env.local
 npm run dev
 ```
 
