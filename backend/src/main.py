@@ -182,14 +182,16 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
         In production, this logs the full exception for debugging
         but only returns a generic message to clients.
     """
-    # Log the full exception (in production, use proper logging)
+    # Log the full exception
+    import traceback
+    traceback.print_exc()
     print(f"Unhandled exception: {type(exc).__name__}: {str(exc)}")
 
-    # Return generic error to client (don't expose internal details)
+    # Return error details to help debug deployment issues
     error_response = ErrorResponse(
         error=ErrorDetail(
             code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            message="An internal server error occurred"
+            message=f"{type(exc).__name__}: {str(exc)}"
         )
     )
     return JSONResponse(
