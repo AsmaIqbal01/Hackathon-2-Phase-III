@@ -48,6 +48,7 @@ export function clearToken(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  localStorage.removeItem('phase3_conversation_id');
 }
 
 /**

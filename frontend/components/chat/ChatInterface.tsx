@@ -73,9 +73,20 @@ export default function ChatInterface() {
           return;
         }
 
+        // Access denied (conversation belongs to another user) - clear and start fresh
+        if ((err as any).status === 403 || err.message.includes('Access denied') || err.message.includes('another user')) {
+          localStorage.removeItem(CONVERSATION_ID_KEY);
+          setConversationId(null);
+          setMessages([]);
+          return;
+        }
+
         // Other errors - display but don't block
         console.error('Failed to load conversation history:', err);
         addSystemMessage('Failed to load conversation history. Starting fresh.');
+        localStorage.removeItem(CONVERSATION_ID_KEY);
+        setConversationId(null);
+        setMessages([]);
       }
     }
   };
