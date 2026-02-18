@@ -20,6 +20,7 @@ from src.agents.confirmation_agent import ConfirmationSubAgent
 from src.agents.task_agent import TaskSubAgent
 from src.agents.conversation_agent import ConversationSubAgent
 from src.services.conversation_service import ConversationService
+from src.config import settings
 from src.database import get_db
 
 
@@ -53,10 +54,14 @@ class MasterAgent:
         """
         self.user_id = str(user_id)
         self.conversation_id = conversation_id
+        self.model = settings.llm_model
         try:
-            self.client = OpenAI()
+            self.client = OpenAI(
+                base_url=settings.llm_base_url,
+                api_key=settings.llm_api_key,
+            )
         except Exception as e:
-            print(f"WARNING: OpenAI client init failed: {e}")
+            print(f"WARNING: LLM client init failed: {e}")
             self.client = None
         self.mcp_session = None
         self.tools = []
@@ -254,7 +259,7 @@ class MasterAgent:
         # Call OpenAI API (with tools only if MCP tools are available)
         openai_tools = self._format_mcp_tools(self.tools) if self.tools else None
         api_kwargs = {
-            "model": "gpt-4o",
+            "model": self.model,
             "messages": messages,
         }
         if openai_tools:
@@ -291,7 +296,7 @@ class MasterAgent:
 
             # Continue conversation with tool results
             response = self.client.chat.completions.create(
-                model="gpt-4o",
+                model=self.model,
                 messages=messages
             )
 

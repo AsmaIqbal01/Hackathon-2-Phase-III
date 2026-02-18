@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     # Security
     bcrypt_rounds: int = 12  # Use 4 for development, 12+ for production
 
+    # LLM Configuration (defaults to Groq free tier)
+    llm_base_url: str = "https://api.groq.com/openai/v1"
+    llm_api_key: str = ""
+    llm_model: str = "llama-3.3-70b-versatile"
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Parse CORS origins from comma-separated string to list."""
