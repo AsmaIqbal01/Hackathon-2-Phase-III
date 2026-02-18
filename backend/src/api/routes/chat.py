@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 from typing import List
 from uuid import UUID
-from src.auth.authenticator import get_current_user
+from src.api.deps import get_current_user
 from src.database import get_db
 from src.models.user import User
 from src.agents.master_agent import MasterAgent
