@@ -6,7 +6,11 @@
 import { ChatRequest, ChatResponse, ChatMessage } from './types';
 
 // Constants - use same env var as api.ts
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (
+  typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? 'https://hackathon-2-phase-iii.onrender.com/api'
+    : 'http://localhost:8000/api'
+);
 export const CONVERSATION_ID_KEY = 'phase3_conversation_id';
 
 /**
