@@ -216,6 +216,9 @@ class ConversationService:
         for message in messages:
             self.db.delete(message)
 
+        # Flush message deletes before removing the conversation (foreign key constraint)
+        self.db.flush()
+
         # Delete the conversation
         self.db.delete(conversation)
         self.db.commit()
