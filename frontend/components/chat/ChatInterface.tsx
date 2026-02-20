@@ -5,16 +5,20 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { useRouter } from 'next/navigation';
 import ChatMessage from './ChatMessage';
 import ConfirmationModal from './ConfirmationModal';
-import { ChatMessage as ChatMessageType, ChatRequest, ConfirmationDetails } from '../../lib/types';
+import { ChatMessage as ChatMessageType, ChatRequest, ConfirmationDetails, ApiError } from '../../lib/types';
 import { sendChatMessage, loadConversationHistory, CONVERSATION_ID_KEY } from '../../lib/chatApi';
 import { getToken, clearToken } from '../../lib/auth';
 import toast from 'react-hot-toast';
 
-export default function ChatInterface() {
+export interface ChatInterfaceHandle {
+  startNewConversation: () => void;
+}
+
+const ChatInterface = forwardRef<ChatInterfaceHandle>(function ChatInterface(_props, ref) {
   const router = useRouter();
 
   // State
@@ -28,6 +32,11 @@ export default function ChatInterface() {
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastMessageRef = useRef<string>(''); // For retry functionality
+
+  // Expose startNewConversation to parent via ref
+  useImperativeHandle(ref, () => ({
+    startNewConversation
+  }));
 
   // Load conversation history on mount
   useEffect(() => {
@@ -74,7 +83,7 @@ export default function ChatInterface() {
         }
 
         // Access denied (conversation belongs to another user) - clear and start fresh
-        if ((err as any).status === 403 || err.message.includes('Access denied') || err.message.includes('another user')) {
+        if ((err instanceof ApiError && err.status === 403) || err.message.includes('Access denied') || err.message.includes('another user')) {
           localStorage.removeItem(CONVERSATION_ID_KEY);
           setConversationId(null);
           setMessages([]);
@@ -82,7 +91,6 @@ export default function ChatInterface() {
         }
 
         // Other errors - display but don't block
-        console.error('Failed to load conversation history:', err);
         addSystemMessage('Failed to load conversation history. Starting fresh.');
         localStorage.removeItem(CONVERSATION_ID_KEY);
         setConversationId(null);
@@ -111,7 +119,7 @@ export default function ChatInterface() {
 
     // Add user message to UI immediately
     const userMessage: ChatMessageType = {
-      id: `temp-${Date.now()}`,
+      id: crypto.randomUUID(),
       role: 'user',
       content: messageText,
       timestamp: new Date()
@@ -146,7 +154,7 @@ export default function ChatInterface() {
       } else {
         // Add assistant response
         const assistantMessage: ChatMessageType = {
-          id: `assistant-${Date.now()}`,
+          id: crypto.randomUUID(),
           role: 'assistant',
           content: response.message,
           timestamp: new Date()
@@ -157,15 +165,15 @@ export default function ChatInterface() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
 
-      // Handle 401 (unauthorized) - check status code instead of string matching
-      if (err instanceof Error && (err as any).status === 401) {
+      // Handle 401 (unauthorized)
+      if (err instanceof ApiError && err.status === 401) {
         clearToken();
         router.push('/login');
         return;
       }
 
       // Add error message to chat
-      addSystemMessage(`⚠️ Error: ${err instanceof Error ? err.message : 'Unknown error'}. Click retry to try again.`);
+      addSystemMessage(`Error: ${err instanceof Error ? err.message : 'Unknown error'}. Click retry to try again.`);
     } finally {
       setLoading(false);
     }
@@ -206,7 +214,7 @@ export default function ChatInterface() {
 
       // Add result message
       const assistantMessage: ChatMessageType = {
-        id: `assistant-${Date.now()}`,
+        id: crypto.randomUUID(),
         role: 'assistant',
         content: response.message,
         timestamp: new Date()
@@ -215,13 +223,13 @@ export default function ChatInterface() {
 
     } catch (err) {
       // Handle 401 (unauthorized)
-      if (err instanceof Error && (err as any).status === 401) {
+      if (err instanceof ApiError && err.status === 401) {
         clearToken();
         router.push('/login');
         return;
       }
 
-      addSystemMessage(`⚠️ Error executing action: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      addSystemMessage(`Error executing action: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -243,7 +251,7 @@ export default function ChatInterface() {
    */
   const addSystemMessage = (content: string) => {
     const systemMessage: ChatMessageType = {
-      id: `system-${Date.now()}`,
+      id: crypto.randomUUID(),
       role: 'system',
       content,
       timestamp: new Date()
@@ -256,7 +264,75 @@ export default function ChatInterface() {
    */
   const handleRetry = () => {
     if (lastMessageRef.current) {
-      handleSendMessage(lastMessageRef.current);
+      // Remove the error/system messages from the failed attempt, and the duplicate user message
+      // Keep only messages up to (and including) the last user message for this retry
+      setMessages(prev => {
+        // Remove trailing system/error messages added after the failure
+        const cleaned = [...prev];
+        while (cleaned.length > 0 && cleaned[cleaned.length - 1].role === 'system') {
+          cleaned.pop();
+        }
+        return cleaned;
+      });
+      setError(null);
+      // Send the message again, but skip adding a new user message (it's already there)
+      retryLastMessage(lastMessageRef.current);
+    }
+  };
+
+  /**
+   * Retry sending without re-adding the user message to the UI
+   */
+  const retryLastMessage = async (messageText: string) => {
+    const token = getToken();
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const request: ChatRequest = {
+        message: messageText,
+        conversation_id: conversationId
+      };
+
+      const response = await sendChatMessage(request, token);
+
+      if (!conversationId && response.conversation_id) {
+        setConversationId(response.conversation_id);
+        localStorage.setItem(CONVERSATION_ID_KEY, response.conversation_id);
+      }
+
+      if (response.requires_confirmation && response.confirmation_details) {
+        setConfirmationRequest({
+          action: response.confirmation_details.action,
+          params: response.confirmation_details.params,
+          prompt: response.message || 'Are you sure you want to proceed?'
+        });
+      } else {
+        const assistantMessage: ChatMessageType = {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: response.message,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send message');
+
+      if (err instanceof ApiError && err.status === 401) {
+        clearToken();
+        router.push('/login');
+        return;
+      }
+
+      addSystemMessage(`Error: ${err instanceof Error ? err.message : 'Unknown error'}. Click retry to try again.`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -316,7 +392,7 @@ export default function ChatInterface() {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={(e) => {
+            onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && !loading) {
                 e.preventDefault();
                 handleSendMessage();
@@ -349,4 +425,6 @@ export default function ChatInterface() {
       )}
     </div>
   );
-}
+});
+
+export default ChatInterface;

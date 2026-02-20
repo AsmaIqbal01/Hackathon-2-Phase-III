@@ -75,3 +75,16 @@ export interface ConfirmationDetails {
   params: Record<string, any>;
   prompt: string;
 }
+
+/**
+ * Typed API error with HTTP status code
+ */
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}

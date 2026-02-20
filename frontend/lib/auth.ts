@@ -1,5 +1,7 @@
 // T006: Auth helpers for token management
 
+import { CONVERSATION_ID_KEY } from './chatApi';
+
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'user_info';
 
@@ -48,7 +50,7 @@ export function clearToken(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
-  localStorage.removeItem('phase3_conversation_id');
+  localStorage.removeItem(CONVERSATION_ID_KEY);
 }
 
 /**

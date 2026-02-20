@@ -5,14 +5,16 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated, clearToken, getUserInfo } from '@/lib/auth';
 import ChatInterface from '@/components/chat/ChatInterface';
+import type { ChatInterfaceHandle } from '@/components/chat/ChatInterface';
 import toast from 'react-hot-toast';
 
 export default function ChatPage() {
   const router = useRouter();
+  const chatRef = useRef<ChatInterfaceHandle>(null);
   const [isClient, setIsClient] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('');
 
@@ -26,29 +28,21 @@ export default function ChatPage() {
       const userInfo = getUserInfo();
       if (userInfo) {
         setUserEmail(userInfo.email);
-        console.log(`[Chat] User authenticated: ${userInfo.email}`);
       }
     }
   }, [router]);
 
   // Handle logout
   const handleLogout = () => {
-    // Log logout action (no sensitive data)
-    console.log(`[Auth] User logged out from chat: ${userEmail}`);
-
-    // Clear all stored credentials and session data
     clearToken();
 
     toast.success('Logged out successfully');
     router.push('/login');
   };
 
-  // Handle new chat
+  // Handle new chat via ChatInterface ref
   const handleNewChat = () => {
-    // This will be called via ref or context
-    // For now, we'll trigger a page refresh to reset state
-    localStorage.removeItem('phase3_conversation_id');
-    window.location.reload();
+    chatRef.current?.startNewConversation();
   };
 
   if (!isClient || !isAuthenticated()) {
@@ -94,7 +88,7 @@ export default function ChatPage() {
       {/* Chat Interface */}
       <div className="flex-1 max-w-5xl w-full mx-auto">
         <div className="h-[calc(100vh-80px)]">
-          <ChatInterface />
+          <ChatInterface ref={chatRef} />
         </div>
       </div>
 
